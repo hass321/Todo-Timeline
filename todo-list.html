@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ToDo LisT</title>
+
+    <style>
+        .sub-heading{
+            font-weight: 100;
+            font-size: 14px;
+            position: relative;
+            top: -4px;
+        }
+        h1{
+            font-family: cursive;
+            filter: drop-shadow(2px 4px 6px black);
+        }
+        #list{
+            background: #eeeeee;
+            width: 400px;
+            height: 450px;
+            border-radius: 10px;
+            padding: 10px;
+            overflow: auto;
+        }
+        #list .list__item li{
+            list-style: none;
+            background: #fffbfb;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            margin-right: 5px;
+            width: 100%;
+        }
+        .list__item{
+            display: flex;
+            align-items: center;
+        }
+        .list__item--text{
+            padding: 10px;
+            min-width: 300px;
+            text-align: left;
+        }
+        .list__item--btn{
+            position: relative !important;
+            right: 54px;
+            margin-right: 2px
+        }
+        .hide{
+            display: none;
+        }
+        #validation{
+            color: red;
+        }
+        #input-area input{
+            border: none;
+            border-bottom: 1px solid #a7a3a3;
+            width: 250px;
+            padding: 10px;
+            margin: 10px;
+            font-family: cursive;
+        }
+        .show{
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <center>
+        <h1>ToDo List <span class="sub-heading">(Manage Day To Day Do's)</span></h1>
+        <div id="input-area">
+            <input type="text" id="items" onkeypress="">
+            <button id="add_item">Add</button>
+            <button id="edit_item" class="hide">Edit</button>
+            <button id="cancel_item" class="hide">Cancel</button>
+        </div>
+        <span id="validation"></span>
+        <div id="list">
+            
+        </div>
+    </center>
+</body>
+<script>
+    var save_item_btn = document.getElementById("add_item");
+    var items = document.getElementById("items");
+    var list = document.getElementById("list");
+    var validation = document.getElementById("validation")
+
+    var todos = [];
+    
+    save_item_btn.onclick = () => add(items.value.trim());
+    
+    // function onPress(event){
+    //     event.keyCode == 13 && add(items.value.trim());
+    // }
+    
+    var storage_leng = localStorage.length
+    
+    if(storage_leng > 0 && localStorage.getItem("Todo") !== ""){
+        // console.log(localStorage)
+        var store_todos = localStorage.getItem("Todo").split(",");
+        
+        store_todos.map(todo => {
+            add(todo);
+        })
+    }
+
+    function add(name){
+        if(name === ""){
+            validation.innerText = "Please write something"
+        }
+        else{
+            validation.innerText = ""
+            /*
+            *   Div element for list with styling
+            */
+            var list_div = document.createElement('div');
+            list_div.classList = 'list__item';
+            var random_id = Math.floor(Math.random()*1000)
+            list_div.id = random_id;
+
+            
+            /*
+            *   List element with styling
+            */
+            var li = document.createElement('li');
+            li.innerText = name;
+            li.classList = 'list__item--text';
+            li.id = `item-${random_id}`
+
+            /*
+            *   remove button
+            */
+            var remove_btn = document.createElement('button')
+            remove_btn.innerText = "D";
+            remove_btn.classList = "list__item--btn"
+            remove_btn.onclick = () => remove_item(random_id, name);
+
+            /*
+            *   edit button
+            */
+            var edit_btn = document.createElement('button')
+            edit_btn.innerText = "E";
+            edit_btn.classList = "list__item--btn"
+            edit_btn.onclick = () => edit_item(random_id, name);
+            
+            items.value = "";
+
+            list_div.append(li);
+            list_div.append(remove_btn)
+            list_div.append(edit_btn)
+            list.append(list_div)
+            
+            todos = [...todos, name];
+            save_item(todos)
+        }
+    }
+
+    function remove_item(id, name){
+        var remove_list = document.getElementById(id);
+        remove_list.classList = "hide";
+
+        todos = todos.filter(todo => name != todo)
+
+        localStorage.setItem("Todo", todos)
+    }
+
+    function save_item(items){
+        localStorage.setItem("Todo", items)
+    }
+
+    function edit_item(id, name){
+        var edit_btn = document.getElementById("edit_item");
+        var cancel_btn = document.getElementById("cancel_item");
+        var add_btn = document.getElementById("add_item");
+        add_btn.classList = "hide";
+        edit_btn.classList = "show";
+        cancel_btn.classList = "show";
+        items.value = name;
+        var index_no = todos.indexOf(name);
+        edit_btn.onclick = () => update_item(id, name, index_no)
+        cancel_btn.onclick = () => cancel();
+
+    }
+
+    function cancel(){
+        var edit_btn = document.getElementById("edit_item");
+        var cancel_btn = document.getElementById("cancel_item");
+        var add_btn = document.getElementById("add_item");
+        add_btn.classList = "show";
+        edit_btn.classList = "hide";
+        cancel_btn.classList = "hide";
+        items.value = ""
+    }
+    function update_item(id, name, index){
+        
+        var list = document.getElementById("list");
+        todos[index] = items.value;
+        var update_items = todos;
+        todos = [];
+
+        localStorage.removeItem("Todo");
+
+        list.innerHTML = "";
+
+        update_items.map(todo => {
+            add(todo);
+        })
+    }
+
+
+
+</script>
+</html>
